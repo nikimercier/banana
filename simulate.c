@@ -16,7 +16,8 @@ enum opcodes {
 	beq,
 	jalr,
 	halt,
-	noop
+	noop,
+	fill
 };
 
 struct int25 {
@@ -41,7 +42,7 @@ typedef struct stateStruct {
 
 void evalState(stateType *);
 struct int25 getInstruction(int);
-void evalInstruction(struct int25, stateType *)
+void evalInstruction(struct int25, stateType *);
 void printState(stateType *);
 void printMem(stateType *);
 int convertNum(int);
@@ -93,11 +94,12 @@ main(int argc, char *argv[])
 	return(0);
 }
 
+// Return decimal to bin if not .fill. If .fill, return as signed int.
 struct int25 getInstruction(int decimal) {
 	struct int25 instr;
 	instr.data = 0;
 	
-	// The opcode is an add 1 0 0 (524288) or higher
+	// The opcode is 524288 (add 1 0 0) or higher
 	if (decimal >= 524288) {
 		instr.data = decimal;
 	}
@@ -109,8 +111,36 @@ struct int25 getInstruction(int decimal) {
 	return instr;
 }
 
+// Evaluate instruction
 void evalInstruction(struct int25 instr, stateType *statePtr) {
+	// 0 = add, 1 = nand, 2 = lw, 3 = sw, 4 = beq, 5 = jalr, 6 = halt,
+	// 7 = noop, 8 = fill
+	int opcode;
 	
+	opcode = instr.data ? instr.data >> 22 : fill;
+	
+	switch(opcode) {
+		case add:
+			break;
+		case nand:
+			break;
+		case lw:
+			break;
+		case sw:
+			break;
+		case beq:
+			break;
+		case jalr:
+			break;
+		case halt:
+			break;
+		case noop:
+			break;
+		// .fill
+		default:
+	}
+	
+	printf("####%d####\n", opcode);
 }
 
 // Evaluate given state.
@@ -120,7 +150,7 @@ void evalState(stateType *statePtr) {
 	
 	struct int25 instr;	
 	instr = getInstruction(decimal);
-	evalInstructions(instr, statePtr);
+	evalInstruction(instr, statePtr);
 		
 	// Update pc
 	statePtr->pc++;
@@ -154,8 +184,7 @@ void printMem(stateType *statePtr) {
 } 
 
 // Convert a 16-bit number into a 32-bit Linux integer
-int
-convertNum(int num) {
+int convertNum(int num) {
 	if (num & (1<<15) ) {
 	    num -= (1<<16);
 	}
