@@ -96,8 +96,10 @@ main(int argc, char *argv[])
 	// Evaluate and print each state
 	while (state.pc != endState + 1) {
 		count++;
-		printState(&state);
+		// printf("multiplier = %d\n", state.reg[3]);
+		// printState(&state);
 		evalState(&state);
+		// getchar();
 	}
 
 	printf("total of %d instructions executed\n", count);
