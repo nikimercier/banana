@@ -265,7 +265,7 @@ void evalInstruction(struct int25 instr, stateType *state) {
 			reg[regB] = mem[reg[regA] + offsetField];
 			break;
 		case sw:
-			mem[regA + offsetField] = reg[regB];
+			mem[reg[regA] + offsetField] = reg[regB];
 			break;
 		case beq:
 			if (reg[regA] == reg[regB]) {
