@@ -46,6 +46,7 @@ void evalInstruction(struct int25, stateType *);
 void printState(stateType *);
 void printMem(stateType *);
 int convertNum(int);
+void getValues(int, struct int25, int *, int *, int *, int *);
 
 int
 main(int argc, char *argv[])
@@ -111,8 +112,8 @@ struct int25 getInstruction(int decimal) {
 	return instr;
 }
 
-// Evaluate instruction
-void evalInstruction(struct int25 instr, stateType *statePtr) {
+// Helper to evalInstruction. Returns regA, regB, destReg, offsetField.
+void getValues(int opcode, struct int25 instr, int *regA, int *regB, int *destReg, int *offsetField) {
 	// R-type instructions (add, nand):
 	//     bits 24-22: opcode
 	//     bits 21-19: reg A
@@ -137,15 +138,8 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 	//     bits 24-22: opcode
 	//     bits 21-0:  unused (should all be 0)
 	
-	int opcode, regA, regB, destReg, offsetField;
 	struct int25 temp;
 	struct int16 num16;
-
-	// Get opcode
-	opcode = instr.data ? instr.data >> 22 : fill;
-	
-	printf("OKkkkkaayyy lets see what u got.\n");
-	printf("Ur opcode is %d.\n", opcode);
 	
 	switch(opcode) {
 		// R-type
@@ -155,21 +149,21 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 			temp.data = instr.data;
 			temp.data = temp.data << 3;
 			temp.data = temp.data >> (3 + 19);
-			regA = temp.data;
+			*regA = temp.data;
 			
 			// Get regB
 			temp.data = instr.data;
 			temp.data = temp.data << 6;
 			temp.data = temp.data >> (6 + 16);
-			regB = temp.data;
+			*regB = temp.data;
 			
 			// Get destReg
 			temp.data = instr.data;
 			temp.data = temp.data << 22;
 			temp.data = temp.data >> 22;
-			destReg = temp.data;
+			*destReg = temp.data;
 			
-			printf("Ur regA is %d and ur regB %d is and ur destReg is %d.\n", regA, regB, destReg);
+			printf("Ur regA is %d and ur regB %d is and ur destReg is %d.\n", *regA, *regB, *destReg);
 			break;
 		
 		// I-type
@@ -180,13 +174,13 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 			temp.data = instr.data;
 			temp.data = temp.data << 3;
 			temp.data = temp.data >> (3 + 19);
-			regA = temp.data;
+			*regA = temp.data;
 			
 			// Get regB
 			temp.data = instr.data;
 			temp.data = temp.data << 6;
 			temp.data = temp.data >> (6 + 16);
-			regB = temp.data;
+			*regB = temp.data;
 			
 			// Get offsetField
 			temp.data = instr.data;
@@ -198,14 +192,14 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 				num16.data = temp.data;
 				num16.data = ~temp.data + 1;
 
-				offsetField = num16.data;
-				offsetField *= -1;
+				*offsetField = num16.data;
+				*offsetField *= -1;
 			}
 			else {
-				offsetField = temp.data;
+				*offsetField = temp.data;
 			}
 			
-			printf("Ur regA is %d and ur regB %d is and ur offsetField is %d.\n", regA, regB, offsetField);
+			printf("Ur regA is %d and ur regB %d is and ur offsetField is %d.\n", *regA, *regB, *offsetField);
 			break;
 			
 		// J-type
@@ -214,15 +208,15 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 			temp.data = instr.data;
 			temp.data = temp.data << 3;
 			temp.data = temp.data >> (3 + 19);
-			regA = temp.data;
+			*regA = temp.data;
 			
 			// Get regB
 			temp.data = instr.data;
 			temp.data = temp.data << 6;
 			temp.data = temp.data >> (6 + 16);
-			regB = temp.data;
+			*regB = temp.data;
 			
-			printf("Ur regA is %d and ur regB %d.\n", regA, regB);
+			printf("Ur regA is %d and ur regB %d.\n", *regA, *regB);
 			break;
 			
 		// halt, noop, .fill
@@ -231,6 +225,57 @@ void evalInstruction(struct int25 instr, stateType *statePtr) {
 		// .fill
 		default:;
 	}
+}
+
+// Evaluate instruction
+void evalInstruction(struct int25 instr, stateType *state) {
+	int opcode, regA, regB, destReg, offsetField, *reg, *mem;
+	reg = state->reg;
+	mem = state->mem;
+
+	// Get opcode
+	opcode = instr.data ? instr.data >> 22 : fill;
+	
+	// Get regA, regB, destReg, offsetField
+	getValues(opcode, instr, &regA, &regB, &destReg, &offsetField);
+	
+	switch(opcode) {
+		// R-type
+		case add:
+			reg[destReg] = reg[regA] + reg[regB];
+			break;
+		case nand:
+			reg[destReg] = ~(reg[regA] & reg[regB]);
+			break;
+			
+		// I-type
+		case lw:
+			reg[regB] = mem[regA + offsetField];
+			break;
+		case sw:
+			mem[regA + offsetField] = reg[regB];
+			break;
+		case beq:
+			if (regA == regB) {
+				state->pc += 1 + offsetField;
+			}
+			break;
+			
+		// J-type
+		case jalr:
+			reg[regB] = state->pc + 1;
+			
+			break;
+		
+		// Other
+		case halt:
+			break;
+		case noop:
+			break;
+		// .fill
+		default:;
+	}
+
 }
 
 // Evaluate given state.
