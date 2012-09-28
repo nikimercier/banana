@@ -26,8 +26,8 @@ done		add			0				1				3				// multiplier = sum
 				lw			0				2				101
 				beq			0				0				loop
 exit    halt                         
-mcand		.fill		3               
-mplier	.fill		4
+mcand		.fill		32766               
+mplier	.fill		10383
 two			.fill		2
 one			.fill		1
 max			.fill		32768
