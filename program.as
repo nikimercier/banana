@@ -8,11 +8,3 @@ done    halt
 five    .fill   5                    
 neg1    .fill   -1                   
 stAddr  .fill   start                
-
-
-// *r1 = M[*r0 + *five]
-// *r2 = M[*r1 + 3]
-// *r1 += *r2
-
-// while (*r0 != *r1)
-// *r1 += *r2
