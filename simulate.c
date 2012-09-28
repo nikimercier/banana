@@ -54,7 +54,7 @@ main(int argc, char *argv[])
 	char line[MAXLINELENGTH];
 	stateType state;
 	FILE *filePtr;
-	int i;
+	int i, endState, count;
 
 	if (argc != 2) {
 		printf("error: usage: %s <machine-code file>\n", argv[0]);
@@ -76,6 +76,11 @@ main(int argc, char *argv[])
 		    printf("error in reading address %d\n", state.numMemory);
 		    exit(1);
 		}
+		
+		// Save halt pc
+		if (state.mem[state.numMemory] == 25165824) {
+			endState = state.numMemory;
+		}
 	}
 
 	// Show memory
@@ -86,11 +91,21 @@ main(int argc, char *argv[])
 		state.reg[i] = 0;
 	}
 	
+	count = 0;
+	
 	// Evaluate and print each state
-	for (i = 0; i < state.numMemory; i++) {
-		evalState(&state);
+	while (state.pc != endState) {
+		count++;
 		printState(&state);
+		evalState(&state);
 	}
+	
+	printState(&state);
+	printf("machine halted\n");
+	printf("total of 17 instructions executed\n");
+	printf("final state of machine:\n");
+	state.pc++;
+	printState(&state);
 
 	return(0);
 }
@@ -163,7 +178,7 @@ void getValues(int opcode, struct int25 instr, int *regA, int *regB, int *destRe
 			temp.data = temp.data >> 22;
 			*destReg = temp.data;
 			
-			printf("Ur regA is %d and ur regB %d is and ur destReg is %d.\n", *regA, *regB, *destReg);
+			// printf("Ur regA is %d and ur regB %d is and ur destReg is %d.\n", *regA, *regB, *destReg);
 			break;
 		
 		// I-type
@@ -199,7 +214,7 @@ void getValues(int opcode, struct int25 instr, int *regA, int *regB, int *destRe
 				*offsetField = temp.data;
 			}
 			
-			printf("Ur regA is %d and ur regB %d is and ur offsetField is %d.\n", *regA, *regB, *offsetField);
+			// printf("Ur regA is %d and ur regB %d is and ur offsetField is %d.\n", *regA, *regB, *offsetField);
 			break;
 			
 		// J-type
@@ -216,7 +231,7 @@ void getValues(int opcode, struct int25 instr, int *regA, int *regB, int *destRe
 			temp.data = temp.data >> (6 + 16);
 			*regB = temp.data;
 			
-			printf("Ur regA is %d and ur regB %d.\n", *regA, *regB);
+			// printf("Ur regA is %d and ur regB %d.\n", *regA, *regB);
 			break;
 			
 		// halt, noop, .fill
@@ -250,25 +265,26 @@ void evalInstruction(struct int25 instr, stateType *state) {
 			
 		// I-type
 		case lw:
-			reg[regB] = mem[regA + offsetField];
+			reg[regB] = mem[reg[regA] + offsetField];
 			break;
 		case sw:
 			mem[regA + offsetField] = reg[regB];
 			break;
 		case beq:
-			if (regA == regB) {
-				state->pc += 1 + offsetField;
+			if (reg[regA] == reg[regB]) {
+				state->pc += offsetField;
 			}
 			break;
 			
 		// J-type
 		case jalr:
 			reg[regB] = state->pc + 1;
-			
+			state->pc = reg[regA];
 			break;
 		
 		// Other
 		case halt:
+			printf("machine halted\n");
 			break;
 		case noop:
 			break;
@@ -276,6 +292,7 @@ void evalInstruction(struct int25 instr, stateType *state) {
 		default:;
 	}
 
+	state->pc++;
 }
 
 // Evaluate given state.
@@ -286,9 +303,6 @@ void evalState(stateType *statePtr) {
 	struct int25 instr;	
 	instr = getInstruction(decimal);
 	evalInstruction(instr, statePtr);
-		
-	// Update pc
-	statePtr->pc++;
 	
 	return;
 }
