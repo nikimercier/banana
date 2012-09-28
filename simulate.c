@@ -82,7 +82,7 @@ main(int argc, char *argv[])
 			endState = state.numMemory;
 		}
 	}
-
+	
 	// Show memory
 	printMem(&state);
 	
@@ -109,18 +109,18 @@ main(int argc, char *argv[])
 
 // Return decimal to bin if not .fill. If .fill, return as signed int.
 struct int25 getInstruction(int decimal) {
-	struct int25 instr;
-	instr.data = 0;
+	struct int25 instr;	
 	
-	// The opcode is 524288 (add 1 0 0) or higher
-	if (decimal >= 524288) {
-		instr.data = decimal;
-	}
-	// Otherwise it's a .fill
-	else {
-		instr.signedData = decimal;
-	}
-	
+	instr.data = decimal;
+	// // The opcode is 524288 (add 1 0 0) or higher
+	// if (decimal >= 524288) {
+	// 	instr.data = decimal;
+	// }
+	// // Otherwise it's a .fill
+	// else {
+	// 	instr.signedData = decimal;
+	// }
+	// 
 	return instr;
 }
 
