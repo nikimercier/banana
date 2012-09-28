@@ -113,34 +113,124 @@ struct int25 getInstruction(int decimal) {
 
 // Evaluate instruction
 void evalInstruction(struct int25 instr, stateType *statePtr) {
-	// 0 = add, 1 = nand, 2 = lw, 3 = sw, 4 = beq, 5 = jalr, 6 = halt,
-	// 7 = noop, 8 = fill
-	int opcode;
+	// R-type instructions (add, nand):
+	//     bits 24-22: opcode
+	//     bits 21-19: reg A
+	//     bits 18-16: reg B
+	//     bits 15-3:  unused (should all be 0)
+	//     bits 2-0:   destReg
 	
+	// I-type instructions (lw, sw, beq):
+	//     bits 24-22: opcode
+	//     bits 21-19: reg A
+	//     bits 18-16: reg B
+	//     bits 15-0:  offsetField (a 16-bit, 2's complement number with a range of
+	//                     -32768 to 32767)
+	
+	// J-type instructions (jalr):
+	//     bits 24-22: opcode
+	//     bits 21-19: reg A
+	//     bits 18-16: reg B
+	//     bits 15-0:  unused (should all be 0)
+	
+	// O-type instructions (halt, noop):
+	//     bits 24-22: opcode
+	//     bits 21-0:  unused (should all be 0)
+	
+	int opcode, regA, regB, destReg, offsetField;
+	struct int25 temp;
+	struct int16 num16;
+
+	// Get opcode
 	opcode = instr.data ? instr.data >> 22 : fill;
 	
-	switch(opcode) {
-		case add:
-			break;
-		case nand:
-			break;
-		case lw:
-			break;
-		case sw:
-			break;
-		case beq:
-			break;
-		case jalr:
-			break;
-		case halt:
-			break;
-		case noop:
-			break;
-		// .fill
-		default:
-	}
+	printf("OKkkkkaayyy lets see what u got.\n");
+	printf("Ur opcode is %d.\n", opcode);
 	
-	printf("####%d####\n", opcode);
+	switch(opcode) {
+		// R-type
+		case add:
+		case nand:
+			// Get regA
+			temp.data = instr.data;
+			temp.data = temp.data << 3;
+			temp.data = temp.data >> (3 + 19);
+			regA = temp.data;
+			
+			// Get regB
+			temp.data = instr.data;
+			temp.data = temp.data << 6;
+			temp.data = temp.data >> (6 + 16);
+			regB = temp.data;
+			
+			// Get destReg
+			temp.data = instr.data;
+			temp.data = temp.data << 22;
+			temp.data = temp.data >> 22;
+			destReg = temp.data;
+			
+			printf("Ur regA is %d and ur regB %d is and ur destReg is %d.\n", regA, regB, destReg);
+			break;
+		
+		// I-type
+		case lw:
+		case sw:
+		case beq:
+			// Get regA
+			temp.data = instr.data;
+			temp.data = temp.data << 3;
+			temp.data = temp.data >> (3 + 19);
+			regA = temp.data;
+			
+			// Get regB
+			temp.data = instr.data;
+			temp.data = temp.data << 6;
+			temp.data = temp.data >> (6 + 16);
+			regB = temp.data;
+			
+			// Get offsetField
+			temp.data = instr.data;
+			// Check if 16-bit bin is two's complement negative
+			temp.data = temp.data << 9;
+			temp.data = temp.data >> 9;
+			if (temp.data >> 15) {
+				// Left-most bit is 1. Is negative.
+				num16.data = temp.data;
+				num16.data = ~temp.data + 1;
+
+				offsetField = num16.data;
+				offsetField *= -1;
+			}
+			else {
+				offsetField = temp.data;
+			}
+			
+			printf("Ur regA is %d and ur regB %d is and ur offsetField is %d.\n", regA, regB, offsetField);
+			break;
+			
+		// J-type
+		case jalr:
+			// Get regA
+			temp.data = instr.data;
+			temp.data = temp.data << 3;
+			temp.data = temp.data >> (3 + 19);
+			regA = temp.data;
+			
+			// Get regB
+			temp.data = instr.data;
+			temp.data = temp.data << 6;
+			temp.data = temp.data >> (6 + 16);
+			regB = temp.data;
+			
+			printf("Ur regA is %d and ur regB %d.\n", regA, regB);
+			break;
+			
+		// halt, noop, .fill
+		case halt:
+		case noop:
+		// .fill
+		default:;
+	}
 }
 
 // Evaluate given state.
