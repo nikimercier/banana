@@ -1,17 +1,17 @@
 # mcand = 32766
 # mplier = 10383
-mcand = 32766
-mplier = 10383
+mcand = 3
+mplier = 4
 product = 0
 
 # 340209378
   
 while (mplier != 0)
   mask = ~(mplier & 1)
-  # puts(mask)
   if (mask == -2)         # originally 1
     product = product + mcand
   end
+  puts(product)
   
   # mcand = mcand << 1
   # mplier = mplier >> 1
@@ -31,7 +31,7 @@ while (mplier != 0)
   end
   
   mplier = count
-  puts(mplier)
+  # puts(mplier)
 end
 
-puts(product)
+# puts(product)

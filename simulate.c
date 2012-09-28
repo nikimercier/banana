@@ -96,7 +96,6 @@ main(int argc, char *argv[])
 	// Evaluate and print each state
 	while (state.pc != endState + 1) {
 		count++;
-		// printf("multiplier = %d\n", state.reg[3]);
 		// printState(&state);
 		evalState(&state);
 		// getchar();
@@ -256,6 +255,9 @@ void evalInstruction(struct int25 instr, stateType *state) {
 	switch(opcode) {
 		// R-type
 		case add:
+			if (regA == 1 && regB == 2 && destReg == 1) {
+				printf("########HEYYYY!!!!! Im updating product = %d + %d########\n", reg[regA], reg[regB]);
+			}
 			reg[destReg] = reg[regA] + reg[regB];
 			break;
 		case nand:
