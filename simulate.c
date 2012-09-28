@@ -100,7 +100,7 @@ main(int argc, char *argv[])
 		evalState(&state);
 	}
 
-	printf("total of 17 instructions executed\n");
+	printf("total of %d instructions executed\n", count);
 	printf("final state of machine:\n");
 	printState(&state);
 
