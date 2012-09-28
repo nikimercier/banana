@@ -94,17 +94,14 @@ main(int argc, char *argv[])
 	count = 0;
 	
 	// Evaluate and print each state
-	while (state.pc != endState) {
+	while (state.pc != endState + 1) {
 		count++;
 		printState(&state);
 		evalState(&state);
 	}
-	
-	printState(&state);
-	printf("machine halted\n");
+
 	printf("total of 17 instructions executed\n");
 	printf("final state of machine:\n");
-	state.pc++;
 	printState(&state);
 
 	return(0);
