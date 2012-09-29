@@ -96,7 +96,7 @@ main(int argc, char *argv[])
 	// Evaluate and print each state
 	while (state.pc != endState + 1) {
 		count++;
-		// printState(&state);
+		printState(&state);
 		evalState(&state);
 		// getchar();
 	}
