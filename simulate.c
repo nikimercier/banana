@@ -277,7 +277,7 @@ void evalInstruction(struct int25 instr, stateType *state) {
 		// J-type
 		case jalr:
 			reg[regB] = state->pc + 1;
-			state->pc = reg[regA];
+			state->pc = reg[regA] - 1;
 			break;
 		
 		// Other
